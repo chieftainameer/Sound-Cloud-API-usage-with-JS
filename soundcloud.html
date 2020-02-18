@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<title>Sound Cloud API Comsumption</title>
+	<style type="text/css">
+		#main{
+			float: right;
+			width: 75%;
+		}
+		.search-panel{
+			width: 100%;
+			margin:0 auto;
+		}
+		.new-div{
+			margin:20px;
+			height:400px;
+			width:25%;
+			float: left;
+		}
+		#left{
+			margin-top: 20px;
+			width:25%;
+			height:100%;
+			background-color: black;
+			color: white;
+			float: left;
+		}
+		.track-image{
+			width: 300px;
+			height: 300px;
+		}
+		.track-div{
+			width: 300px;
+			float: left;
+			margin: 15px;
+		}
+		.link_title h3{
+			text-decoration: none;
+			color: black;
+		}
+		.link_title:hover{
+			text-decoration: none;
+		}
+		.box{
+			margin:20px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container text-center search-panel">
+	<input type="text" name="song" class="form-control" id="inp">
+	<button class="btn btn-primary" id="search" >Search</button>
+    </div>
+	<div id="left">
+	
+	</div>
+	
+<div id="main">
+	
+		
+	
+</div>
+
+<script src="https://connect.soundcloud.com/sdk/sdk-3.3.2.js"></script>
+<script type="text/javascript">
+
+	SC.initialize({client_id:'195d273fb18f4a9a75ebda65c1aa2631'});
+	let search = document.getElementById('search');
+	search.addEventListener('click',function(e){
+
+	let val = document.getElementById('inp').value;
+		getTracks(val);
+
+	});
+
+
+	function getTracks(value){
+		document.getElementById("main").innerHTML = "";
+		let u = value;
+		SC.get('/tracks',{q:u}).then(function(tracks){
+		tracks.forEach(function(track){
+			renderTrack(track);
+			console.log(track);
+		});
+		
+	});
+
+			}
+			
+			
+
+	
+    function renderTrack(track){
+		let existing_div = document.getElementById("main");
+		let track_div = document.createElement("div");
+		track_div.classList.add("track-div");
+		let image_div = document.createElement("div");
+		let image = document.createElement("img");
+		image.classList.add("track-image");
+		image.src = track.artwork_url || "http://lorempixel.com/400/200/";
+		image_div.append(image);
+		let content = document.createElement("div");
+		let header = document.createElement("div");
+		header.classList.add("link_title");
+		header.innerHTML = '<a href='+ track.permalink_url +' target="_blank"><h3>'+ track.title +'</h3></a>'
+		let btn = document.createElement("button");
+		btn.classList.add("btn","btn-primary")
+		btn.innerHTML = "+ Add To Playlist";
+		btn.addEventListener('click',function(){
+			getEmbed(track);
+		});
+		content.classList.add('content-div');
+		content.append(header);
+		content.append(btn);
+		track_div.append(image_div); 
+		track_div.append(content); 
+		existing_div.append(track_div);
+
+		
+	}
+
+	function getEmbed(track){
+		//alert("in function get embed" + track.permalink_url);
+		SC.oEmbed(track.permalink_url,{auto_play: true}).then(function(embed){
+		let sidebar = document.getElementById("left");
+
+			let box = document.createElement("div");
+			box.classList.add("box");
+			box.innerHTML = embed.html;
+			sidebar.insertBefore(box,sidebar.firstChild);
+			localStorage.setItem("key",sidebar.innerHTML);
+
+		});
+	}
+	
+
+	let sidebar = document.getElementById("left");
+	sidebar.innerHTML = localStorage.getItem("key");
+
+/*
+function renderTrack(track){
+	/*
+	SC.oEmbed(track, { auto_play: true }).then(function(oEmbed) {
+  //console.log('oEmbed response: ', oEmbed.html);
+  document.getElementById('main').innerHTML += oEmbed.html;
+});*/
+/*
+let main_div = document.getElementById('main');
+let new_div = document.createElement("div");
+    new_div.classList.add('new-song');
+	SC.oEmbed(track,{auto_play: true}).then(function(t_html){
+		//console.log(t_html.html);
+		new_div.innerHTML = t_html.hmtl;
+		main_div.append(new_div);
+	});
+	}*/
+</script>
+</body>
+</html>
